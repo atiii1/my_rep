@@ -12,7 +12,7 @@ logo = Image.open("hf_logo.png")
 st.image(logo, width=200)  # Adjust the width as needed
 
 # Add the title and rest of your app content
-st.title("My Streamlit App")
+st.title("Data Processor App")
 
 # Rest of your app code here
 #st.write("Welcome to my Streamlit app!")
