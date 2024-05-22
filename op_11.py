@@ -2,8 +2,33 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 
+import streamlit as st
+from PIL import Image
+
+# Load the image
+logo = Image.open("hf_logo.png")
+
+# Display the image at the top of the app
+st.image(logo, width=200)  # Adjust the width as needed
+
+# Add the title and rest of your app content
+st.title("My Streamlit App")
+
+# Rest of your app code here
+#st.write("Welcome to my Streamlit app!")
+
+# Sample code to add more content
+#st.header("Section 1")
+#st.write("This is the first section of the app.")
+
+#st.header("Section 2")
+#st.write("This is the second section of the app.")
+
+
+
+st.markdown("### 🔧 Settings")
 # Function to read and process Excel data
-@st.experimental_memo
+@st.cache_data
 def read_excel_data(uploaded_file):
     sheets_dict = pd.read_excel(uploaded_file, sheet_name=None)
     combined_df = pd.DataFrame()
@@ -35,6 +60,8 @@ if uploaded_file:
         # Create a Plotly figure with better aspect ratio
         fig = go.Figure()
 
+        st.markdown("## 📈 Analytics Section")
+        
         # Add data trace for each sheet in blue
         for sheet_name, df in sheets_dict.items():
             fig.add_trace(go.Scatter(x=df[cycle_time_column], y=df[selected_column], mode='lines', line=dict(color='blue'), showlegend=False))
