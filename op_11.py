@@ -47,7 +47,28 @@ if uploaded_file:
     # Create selectboxes for column and cycle time
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
-
+    
+    st.markdown(
+    """
+    <style>
+    /* Change button size */
+    .stButton>button {
+        padding: 10px 45px; /* Adjust padding to change button size */
+        font-size: 16px; /* Adjust font size */
+        border-radius: 10px; /* Add rounded corners */
+        background-color: #4CAF50; /* Change background color */
+        color: white; /* Change text color to white */
+        border: none; /* Remove border */
+        cursor: pointer; /* Add pointer cursor on hover */
+        transition: background-color 0.3s ease; /* Smooth transition */
+    }
+    /* Hover effect */
+    .stButton>button:hover {
+        background-color: #45a049; /* Darken background color on hover */
+    }
+    </style>
+    """, unsafe_allow_html=True
+    )
     if st.button('Show'):
         cleaned_df = combined_df[[selected_column, cycle_time_column]].dropna()
 
