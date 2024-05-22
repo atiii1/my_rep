@@ -56,7 +56,7 @@ if uploaded_file:
         padding: 10px 45px; /* Adjust padding to change button size */
         font-size: 16px; /* Adjust font size */
         border-radius: 10px; /* Add rounded corners */
-        background-color: #4CAF50; /* Change background color */
+        background-color: #1E90FF; /* Change background color */
         color: white; /* Change text color to white */
         border: none; /* Remove border */
         cursor: pointer; /* Add pointer cursor on hover */
@@ -64,7 +64,7 @@ if uploaded_file:
     }
     /* Hover effect */
     .stButton>button:hover {
-        background-color: #45a049; /* Darken background color on hover */
+        background-color: #4169E1; /* Darken background color on hover */
     }
     </style>
     """, unsafe_allow_html=True
