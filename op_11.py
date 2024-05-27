@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+
+import streamlit as st
 from PIL import Image
-import re
-import xlsxwriter
 
 # Load the image
 logo = Image.open("hf_logo.png")
@@ -12,10 +12,21 @@ logo = Image.open("hf_logo.png")
 st.image(logo, width=200)  # Adjust the width as needed
 
 # Add the title and rest of your app content
-st.title("My Streamlit App")
+st.title("Data Processor App")
+
+# Rest of your app code here
+#st.write("Welcome to my Streamlit app!")
+
+# Sample code to add more content
+#st.header("Section 1")
+#st.write("This is the first section of the app.")
+
+#st.header("Section 2")
+#st.write("This is the second section of the app.")
+
+
 
 st.markdown("### 🔧 Settings")
-
 # Function to read and process Excel data
 @st.experimental_memo
 def read_excel_data(uploaded_file):
@@ -37,16 +48,15 @@ if uploaded_file:
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
     
-    # Add CSS styling for the "Show" button
     st.markdown(
     """
     <style>
     /* Change button size */
     .stButton>button {
-        padding: 10px 20px; /* Adjust padding to change button size */
+        padding: 10px 45px; /* Adjust padding to change button size */
         font-size: 16px; /* Adjust font size */
         border-radius: 10px; /* Add rounded corners */
-        background-color: #4CAF50; /* Change background color */
+        background-color: #1E90FF; /* Change background color */
         color: white; /* Change text color to white */
         border: none; /* Remove border */
         cursor: pointer; /* Add pointer cursor on hover */
@@ -54,33 +64,11 @@ if uploaded_file:
     }
     /* Hover effect */
     .stButton>button:hover {
-        background-color: #45a049; /* Darken background color on hover */
+        background-color: #4169E1; /* Darken background color on hover */
     }
     </style>
     """, unsafe_allow_html=True
     )
-
-    if st.button('Download Data'):
-        cleaned_df = combined_df[[selected_column, cycle_time_column]].dropna()
-
-        # Prepare data to be written to Excel
-        data_dict = {}
-        for sheet_name, df in sheets_dict.items():
-            data_dict[sheet_name] = df[selected_column]
-
-        # Clean the selected column name for a valid file and sheet name
-        safe_selected_column = re.sub(r'[\\/*?:"<>|]', "", selected_column)
-        safe_selected_column = safe_selected_column[:31]  # Truncate to 31 characters
-
-        # Save to Excel
-        output_path = f"{safe_selected_column}.xlsx"
-        with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-            # Create a DataFrame from the dictionary and write it to the Excel file
-            result_df = pd.DataFrame(data_dict)
-            result_df.to_excel(writer, index=False, sheet_name=safe_selected_column)
-
-        st.success(f"Data for {selected_column} saved to {output_path}")
-
     if st.button('Show'):
         cleaned_df = combined_df[[selected_column, cycle_time_column]].dropna()
 
@@ -94,7 +82,7 @@ if uploaded_file:
         fig = go.Figure()
 
         st.markdown("## 📈 Analytics Section")
-
+        
         # Add data trace for each sheet in blue
         for sheet_name, df in sheets_dict.items():
             fig.add_trace(go.Scatter(x=df[cycle_time_column], y=df[selected_column], mode='lines', line=dict(color='blue'), showlegend=False))
