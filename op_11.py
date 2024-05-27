@@ -17,7 +17,7 @@ st.title("My Streamlit App")
 st.markdown("### 🔧 Settings")
 
 # Function to read and process Excel data
-@st.experimental_memo
+@st.cache_data
 def read_excel_data(uploaded_file):
     sheets_dict = pd.read_excel(uploaded_file, sheet_name=None)
     combined_df = pd.DataFrame()
@@ -42,20 +42,26 @@ if uploaded_file:
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
 
+    # Text input for the output directory
+    output_directory = st.text_input("Enter the directory path to save the data (leave empty to save in the current directory)")
+
     # Button to download data
     if st.button('Download Data'):
         # Create a DataFrame to hold the selected column data from all sheets
         selected_data = pd.DataFrame()
-        
+
         for sheet_name, df in sheets_dict.items():
             if selected_column in df.columns:
                 sanitized_sheet_name = sanitize_sheet_name(sheet_name)
                 selected_data[sanitized_sheet_name] = df[selected_column]
-        
+
         # Define the output file name and sheet name based on the selected column
         output_file_name = f"{selected_column}.xlsx"
-        output_path = os.path.join(os.getcwd(), output_file_name)
-        
+        if output_directory:
+            output_path = os.path.join(output_directory, output_file_name)
+        else:
+            output_path = output_file_name
+
         with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
             # Write the selected data to a new Excel file with the sheet name as the selected column
             selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
@@ -108,7 +114,7 @@ if uploaded_file:
         # Add mean line
         fig.add_trace(go.Scatter(x=mean_values[cycle_time_column], y=mean_values[selected_column], mode='lines', name='Overall mean', line=dict(color='red', dash='dash')))
 
-        # Add median line
+       # Add median line
         fig.add_trace(go.Scatter(x=median_values[cycle_time_column], y=median_values[selected_column], mode='lines', name='Overall median', line=dict(color='green', dash='dot')))
 
         # Add standard deviation lines
