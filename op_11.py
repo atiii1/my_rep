@@ -1,9 +1,9 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-
-import streamlit as st
 from PIL import Image
+import os
+import re
 
 # Load the image
 logo = Image.open("hf_logo.png")
@@ -12,21 +12,10 @@ logo = Image.open("hf_logo.png")
 st.image(logo, width=200)  # Adjust the width as needed
 
 # Add the title and rest of your app content
-st.title("Data Processor App")
-
-# Rest of your app code here
-#st.write("Welcome to my Streamlit app!")
-
-# Sample code to add more content
-#st.header("Section 1")
-#st.write("This is the first section of the app.")
-
-#st.header("Section 2")
-#st.write("This is the second section of the app.")
-
-
+st.title("My Streamlit App")
 
 st.markdown("### 🔧 Settings")
+
 # Function to read and process Excel data
 @st.experimental_memo
 def read_excel_data(uploaded_file):
@@ -36,6 +25,11 @@ def read_excel_data(uploaded_file):
         df['Sheet'] = sheet_name
         combined_df = pd.concat([combined_df, df], ignore_index=True)
     return sheets_dict, combined_df
+
+# Function to sanitize sheet names
+def sanitize_sheet_name(sheet_name):
+    sanitized_name = re.sub(r'[\\/*?:\[\]]', '', sheet_name)
+    return sanitized_name[:31]  # Truncate to 31 characters
 
 # Upload the Excel file
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
@@ -47,16 +41,38 @@ if uploaded_file:
     # Create selectboxes for column and cycle time
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
-    
+
+    # Button to download data
+    if st.button('Download Data'):
+        # Create a DataFrame to hold the selected column data from all sheets
+        selected_data = pd.DataFrame()
+        
+        for sheet_name, df in sheets_dict.items():
+            if selected_column in df.columns:
+                sanitized_sheet_name = sanitize_sheet_name(sheet_name)
+                selected_data[sanitized_sheet_name] = df[selected_column]
+        
+        # Define the output file name and sheet name based on the selected column
+        output_file_name = f"{selected_column}.xlsx"
+        output_path = os.path.join(os.getcwd(), output_file_name)
+        
+        with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+            # Write the selected data to a new Excel file with the sheet name as the selected column
+            selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
+            writer.close()
+
+        st.success(f"Data saved successfully to {output_path}")
+
+    # Add CSS styling for the "Show" button
     st.markdown(
     """
     <style>
     /* Change button size */
     .stButton>button {
-        padding: 10px 45px; /* Adjust padding to change button size */
+        padding: 10px 20px; /* Adjust padding to change button size */
         font-size: 16px; /* Adjust font size */
         border-radius: 10px; /* Add rounded corners */
-        background-color: #1E90FF; /* Change background color */
+        background-color: #1E90FF; /* Change background color to dark blue */
         color: white; /* Change text color to white */
         border: none; /* Remove border */
         cursor: pointer; /* Add pointer cursor on hover */
@@ -69,6 +85,8 @@ if uploaded_file:
     </style>
     """, unsafe_allow_html=True
     )
+
+    # Button to show the graph
     if st.button('Show'):
         cleaned_df = combined_df[[selected_column, cycle_time_column]].dropna()
 
@@ -82,7 +100,7 @@ if uploaded_file:
         fig = go.Figure()
 
         st.markdown("## 📈 Analytics Section")
-        
+
         # Add data trace for each sheet in blue
         for sheet_name, df in sheets_dict.items():
             fig.add_trace(go.Scatter(x=df[cycle_time_column], y=df[selected_column], mode='lines', line=dict(color='blue'), showlegend=False))
