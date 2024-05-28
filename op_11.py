@@ -31,6 +31,10 @@ def sanitize_sheet_name(sheet_name):
     sanitized_name = re.sub(r'[\\/*?:\[\]]', '', sheet_name)
     return sanitized_name[:31]  # Truncate to 31 characters
 
+# Display the current working directory
+current_directory = os.getcwd()
+st.markdown(f"**Current working directory:** `{current_directory}`")
+
 # Upload the Excel file
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
@@ -60,14 +64,17 @@ if uploaded_file:
         if output_directory:
             output_path = os.path.join(output_directory, output_file_name)
         else:
-            output_path = output_file_name
+            # Use the current directory if no path is provided
+            output_path = os.path.join(current_directory, output_file_name)
 
-        with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-            # Write the selected data to a new Excel file with the sheet name as the selected column
-            selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
-            writer.close()
-
-        st.success(f"Data saved successfully to {output_path}")
+        try:
+            with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+                # Write the selected data to a new Excel file with the sheet name as the selected column
+                selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
+                writer.close()
+            st.success(f"Data saved successfully to {output_path}")
+        except Exception as e:
+            st.error(f"An error occurred while saving the file: {e}")
 
     # Add CSS styling for the "Show" button
     st.markdown(
@@ -114,7 +121,7 @@ if uploaded_file:
         # Add mean line
         fig.add_trace(go.Scatter(x=mean_values[cycle_time_column], y=mean_values[selected_column], mode='lines', name='Overall mean', line=dict(color='red', dash='dash')))
 
-       # Add median line
+        # Add median line
         fig.add_trace(go.Scatter(x=median_values[cycle_time_column], y=median_values[selected_column], mode='lines', name='Overall median', line=dict(color='green', dash='dot')))
 
         # Add standard deviation lines
