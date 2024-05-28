@@ -17,7 +17,7 @@ st.title("My Streamlit App")
 st.markdown("### 🔧 Settings")
 
 # Function to read and process Excel data
-@st.cache_data
+@st.experimental_memo
 def read_excel_data(uploaded_file):
     sheets_dict = pd.read_excel(uploaded_file, sheet_name=None)
     combined_df = pd.DataFrame()
