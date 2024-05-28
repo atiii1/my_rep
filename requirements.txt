@@ -4,3 +4,4 @@ pandas
 plotly
 Pillow
 xlsxwriter
+fsspec
