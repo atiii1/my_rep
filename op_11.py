@@ -54,6 +54,27 @@ if uploaded_file:
     if not output_directory:
         output_directory = current_directory
 
+    # Check if directory exists and create if it doesn't
+    if not os.path.exists(output_directory):
+        try:
+            os.makedirs(output_directory, exist_ok=True)
+            st.write(f"Directory created: {output_directory}")
+        except Exception as e:
+            st.error(f"Failed to create directory: {e}")
+            # Fallback to temporary directory
+            output_directory = tempfile.gettempdir()
+            st.write(f"Falling back to temporary directory: {output_directory}")
+
+    # Check write permissions
+    if not os.access(output_directory, os.W_OK):
+        st.error(f"No write permissions for directory: {output_directory}")
+        # Fallback to temporary directory
+        output_directory = tempfile.gettempdir()
+        st.write(f"Falling back to temporary directory: {output_directory}")
+
+    output_path = os.path.join(output_directory, f"{selected_column}.xlsx")
+    st.write(f"Output path: {output_path}")
+
     # Button to download data
     if st.button('Download Data'):
         # Create a DataFrame to hold the selected column data from all sheets
@@ -63,28 +84,6 @@ if uploaded_file:
             if selected_column in df.columns:
                 sanitized_sheet_name = sanitize_sheet_name(sheet_name)
                 selected_data[sanitized_sheet_name] = df[selected_column]
-
-        # Define the output file name and sheet name based on the selected column
-        output_file_name = f"{selected_column}.xlsx"
-        output_path = os.path.join(output_directory, output_file_name)
-
-        st.write(f"Output path: {output_path}")
-
-        # Check if directory exists and has write permissions
-        if os.path.exists(output_directory):
-            st.write(f"Directory exists: {output_directory}")
-        else:
-            st.write(f"Directory does not exist: {output_directory}")
-            os.makedirs(output_directory, exist_ok=True)
-            st.write(f"Directory created: {output_directory}")
-
-        if os.access(output_directory, os.W_OK):
-            st.write(f"Write permissions: Yes for {output_directory}")
-        else:
-            st.write(f"Write permissions: No for {output_directory}")
-            output_directory = current_directory
-            output_path = os.path.join(output_directory, output_file_name)
-            st.write(f"Falling back to current directory. New output path: {output_path}")
 
         try:
             with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
@@ -146,4 +145,16 @@ if uploaded_file:
         fig.add_trace(go.Scatter(x=std_values[cycle_time_column], y=mean_values[selected_column] + std_values[selected_column], mode='lines', name='Overall +1 std dev', line=dict(color='orange', dash='dashdot')))
         fig.add_trace(go.Scatter(x=std_values[cycle_time_column], y=mean_values[selected_column] - std_values[selected_column], mode='lines', name='Overall -1 std dev', line=dict(color='orange', dash='dashdot')))
 
-        # Set the title and labels with dimensions for better aspect
+        # Set the title and labels with dimensions for better aspect ratio
+        fig.update_layout(
+            title=f'Line chart of {selected_column} across all sheets',
+            xaxis_title=cycle_time_column,
+            yaxis_title=selected_column,
+            autosize=True,  # Enable autosize for better aspect ratio
+            width=900,  # Adjust width for balanced aspect ratio
+            height=600,  # Adjust height for balanced aspect ratio
+            font=dict(size=14)  # Increase font size for better readability
+        )
+
+        # Display the plot with improved aspect ratio
+        st.plotly_chart(fig, use_container_width=True)
