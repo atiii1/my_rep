@@ -89,7 +89,12 @@ if uploaded_file:
             with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
                 # Write the selected data to a new Excel file with the sheet name as the selected column
                 selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
-            st.success(f"Data saved successfully to {output_path}")
+                writer.close()
+                
+            if os.path.exists(output_path):
+                st.success(f"Data saved successfully to {output_path}")
+            else:
+                st.error(f"Data was not saved successfully. File not found: {output_path}")
         except Exception as e:
             st.error(f"An error occurred while saving the file: {e}")
 
