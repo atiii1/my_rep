@@ -90,9 +90,12 @@ if uploaded_file:
                 # Write the selected data to a new Excel file with the sheet name as the selected column
                 selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
                 writer.close()
-                
+
+            # Double-check if the file exists after writing
             if os.path.exists(output_path):
                 st.success(f"Data saved successfully to {output_path}")
+                st.write(f"File exists: {os.path.exists(output_path)}")  # Debug log
+                st.write(f"File size: {os.path.getsize(output_path)} bytes")  # Debug log
             else:
                 st.error(f"Data was not saved successfully. File not found: {output_path}")
         except Exception as e:
