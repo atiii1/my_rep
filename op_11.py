@@ -4,6 +4,7 @@ import plotly.graph_objects as go
 from PIL import Image
 import os
 import re
+import tempfile
 
 # Load the image
 logo = Image.open("hf_logo.png")
@@ -49,6 +50,10 @@ if uploaded_file:
     # Text input for the output directory
     output_directory = st.text_input("Enter the directory path to save the data (leave empty to save in the current directory)")
 
+    # Use current directory if no path is provided
+    if not output_directory:
+        output_directory = current_directory
+
     # Button to download data
     if st.button('Download Data'):
         # Create a DataFrame to hold the selected column data from all sheets
@@ -61,17 +66,30 @@ if uploaded_file:
 
         # Define the output file name and sheet name based on the selected column
         output_file_name = f"{selected_column}.xlsx"
-        if output_directory:
-            output_path = os.path.join(output_directory, output_file_name)
+        output_path = os.path.join(output_directory, output_file_name)
+
+        st.write(f"Output path: {output_path}")
+
+        # Check if directory exists and has write permissions
+        if os.path.exists(output_directory):
+            st.write(f"Directory exists: {output_directory}")
         else:
-            # Use the current directory if no path is provided
-            output_path = os.path.join(current_directory, output_file_name)
+            st.write(f"Directory does not exist: {output_directory}")
+            os.makedirs(output_directory, exist_ok=True)
+            st.write(f"Directory created: {output_directory}")
+
+        if os.access(output_directory, os.W_OK):
+            st.write(f"Write permissions: Yes for {output_directory}")
+        else:
+            st.write(f"Write permissions: No for {output_directory}")
+            output_directory = current_directory
+            output_path = os.path.join(output_directory, output_file_name)
+            st.write(f"Falling back to current directory. New output path: {output_path}")
 
         try:
             with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
                 # Write the selected data to a new Excel file with the sheet name as the selected column
                 selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
-                writer.close()
             st.success(f"Data saved successfully to {output_path}")
         except Exception as e:
             st.error(f"An error occurred while saving the file: {e}")
@@ -128,16 +146,4 @@ if uploaded_file:
         fig.add_trace(go.Scatter(x=std_values[cycle_time_column], y=mean_values[selected_column] + std_values[selected_column], mode='lines', name='Overall +1 std dev', line=dict(color='orange', dash='dashdot')))
         fig.add_trace(go.Scatter(x=std_values[cycle_time_column], y=mean_values[selected_column] - std_values[selected_column], mode='lines', name='Overall -1 std dev', line=dict(color='orange', dash='dashdot')))
 
-        # Set the title and labels with dimensions for better aspect ratio
-        fig.update_layout(
-            title=f'Line chart of {selected_column} across all sheets',
-            xaxis_title=cycle_time_column,
-            yaxis_title=selected_column,
-            autosize=True,  # Enable autosize for better aspect ratio
-            width=900,  # Adjust width for balanced aspect ratio
-            height=600,  # Adjust height for balanced aspect ratio
-            font=dict(size=14)  # Increase font size for better readability
-        )
-
-        # Display the plot with improved aspect ratio
-        st.plotly_chart(fig, use_container_width=True)
+        # Set the title and labels with dimensions for better aspect
