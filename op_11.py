@@ -31,7 +31,6 @@ def sanitize_sheet_name(sheet_name):
     sanitized_name = re.sub(r'[\\/*?:\[\]]', '', sheet_name)
     return sanitized_name[:31]  # Truncate to 31 characters
 
-
 # Upload the Excel file
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
 
@@ -43,6 +42,10 @@ if uploaded_file:
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
 
+    # Initialize session state for selected data
+    if 'selected_data' not in st.session_state:
+        st.session_state.selected_data = pd.DataFrame()
+
     # Button to show data as a table
     if st.button('Show Data'):
         # Create a DataFrame to hold the selected column data from all sheets
@@ -53,8 +56,12 @@ if uploaded_file:
                 sanitized_sheet_name = sanitize_sheet_name(sheet_name)
                 selected_data[sanitized_sheet_name] = df[selected_column]
 
-        # Display the DataFrame as a table
-        st.dataframe(selected_data)
+        # Store the selected data in session state
+        st.session_state.selected_data = selected_data
+
+    # Display the DataFrame as a table if available in session state
+    if not st.session_state.selected_data.empty:
+        st.dataframe(st.session_state.selected_data)
 
     # Add CSS styling for the "Show" button
     st.markdown(
