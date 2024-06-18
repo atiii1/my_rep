@@ -4,7 +4,6 @@ import plotly.graph_objects as go
 from PIL import Image
 import os
 import re
-import tempfile
 
 # Load the image
 logo = Image.open("hf_logo.png")
@@ -13,7 +12,7 @@ logo = Image.open("hf_logo.png")
 st.image(logo, width=200)  # Adjust the width as needed
 
 # Add the title and rest of your app content
-st.title("My Streamlit App")
+st.title("Data Processing App")
 
 st.markdown("### 🔧 Settings")
 
@@ -32,9 +31,6 @@ def sanitize_sheet_name(sheet_name):
     sanitized_name = re.sub(r'[\\/*?:\[\]]', '', sheet_name)
     return sanitized_name[:31]  # Truncate to 31 characters
 
-# Display the current working directory
-current_directory = os.getcwd()
-st.markdown(f"**Current working directory:** `{current_directory}`")
 
 # Upload the Excel file
 uploaded_file = st.file_uploader("Choose an Excel file", type="xlsx")
@@ -47,36 +43,8 @@ if uploaded_file:
     selected_column = st.selectbox("Choose a column to plot", columns)
     cycle_time_column = st.selectbox("Choose the cycle time column", columns)
 
-    # Text input for the output directory
-    output_directory = st.text_input("Enter the directory path to save the data (leave empty to save in the current directory)")
-
-    # Use current directory if no path is provided
-    if not output_directory:
-        output_directory = current_directory
-
-    # Check if directory exists and create if it doesn't
-    if not os.path.exists(output_directory):
-        try:
-            os.makedirs(output_directory, exist_ok=True)
-            st.write(f"Directory created: {output_directory}")
-        except Exception as e:
-            st.error(f"Failed to create directory: {e}")
-            # Fallback to temporary directory
-            output_directory = tempfile.gettempdir()
-            st.write(f"Falling back to temporary directory: {output_directory}")
-
-    # Check write permissions
-    if not os.access(output_directory, os.W_OK):
-        st.error(f"No write permissions for directory: {output_directory}")
-        # Fallback to temporary directory
-        output_directory = tempfile.gettempdir()
-        st.write(f"Falling back to temporary directory: {output_directory}")
-
-    output_path = os.path.join(output_directory, f"{selected_column}.xlsx")
-    st.write(f"Output path: {output_path}")
-
-    # Button to download data
-    if st.button('Download Data'):
+    # Button to show data as a table
+    if st.button('Show Data'):
         # Create a DataFrame to hold the selected column data from all sheets
         selected_data = pd.DataFrame()
 
@@ -85,21 +53,8 @@ if uploaded_file:
                 sanitized_sheet_name = sanitize_sheet_name(sheet_name)
                 selected_data[sanitized_sheet_name] = df[selected_column]
 
-        try:
-            with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
-                # Write the selected data to a new Excel file with the sheet name as the selected column
-                selected_data.to_excel(writer, index=False, sheet_name=sanitize_sheet_name(selected_column))
-                writer.close()
-
-            # Double-check if the file exists after writing
-            if os.path.exists(output_path):
-                st.success(f"Data saved successfully to {output_path}")
-                st.write(f"File exists: {os.path.exists(output_path)}")  # Debug log
-                st.write(f"File size: {os.path.getsize(output_path)} bytes")  # Debug log
-            else:
-                st.error(f"Data was not saved successfully. File not found: {output_path}")
-        except Exception as e:
-            st.error(f"An error occurred while saving the file: {e}")
+        # Display the DataFrame as a table
+        st.dataframe(selected_data)
 
     # Add CSS styling for the "Show" button
     st.markdown(
@@ -125,7 +80,7 @@ if uploaded_file:
     )
 
     # Button to show the graph
-    if st.button('Show'):
+    if st.button('Show Graph'):
         cleaned_df = combined_df[[selected_column, cycle_time_column]].dropna()
 
         # Group by cycle time and calculate statistics
