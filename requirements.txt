@@ -5,3 +5,6 @@ plotly
 Pillow
 xlsxwriter
 fsspec
+numpy
+matplotlib
+seaborn
