@@ -79,7 +79,7 @@ if uploaded_file:
 
         # Update plot layout
         fig.update_layout(
-            title=f'Line chart of {selected_column} across all sheets',
+            title=f'<b>Line Chart of {selected_column}</b> across all sheets',
             xaxis_title=cycle_time_column,
             yaxis_title=selected_column,
             title_font=dict(size=18, color='navy'),
@@ -93,9 +93,11 @@ if uploaded_file:
 
     # Display the "Analytics Section" heading consistently below the buttons
     st.markdown("## 📈 Analytics Section")
+    st.markdown("----")  # Adds a horizontal line for visual separation
 
-    # Display the DataFrame as a table if available
+    # Display the text and DataFrame as a table if available
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
+        st.markdown(f'<h3 style="color: navy; font-size: 18px;"><b>Table of Data: {selected_column}</b></h3>', unsafe_allow_html=True)
         st.dataframe(st.session_state.selected_data)
 
     # Display the graph if available
