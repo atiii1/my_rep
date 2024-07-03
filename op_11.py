@@ -82,12 +82,12 @@ if uploaded_file:
             title=f'Line chart of {selected_column} across all sheets',
             xaxis_title=cycle_time_column,
             yaxis_title=selected_column,
+            title_font=dict(size=18, color='navy'),
             autosize=True,
             width=900,
-            height=600,
-            font=dict(size=14)
+            height=700,
+            font=dict(size=16)
         )
-
         # Store the plot in session state
         st.session_state.plot = fig
 
