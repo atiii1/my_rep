@@ -24,7 +24,7 @@ st.image(logo, width=200)  # Adjust the width as needed
 sns.set_theme(style="darkgrid")
 
 # Function to process uploaded file and detect intervals
-def process_file(df, time_col, Power_col, Tc_col, Tm_col, active_Temp_col, tolerance, cooling_s, manual_Tc, manual_Tm, use_manual):
+def process_file(df, time_col, Power_col, Tc_col, Tm_col, active_Temp_col, tolerance, cooling_s, manual_Tc, manual_Tm, use_manual_Tc, use_manual_Tm):
     # Ensure the time column is treated as float
     df[time_col] = df[time_col].astype(float)
     
@@ -49,12 +49,16 @@ def process_file(df, time_col, Power_col, Tc_col, Tm_col, active_Temp_col, toler
             # Calculate mean values during this interval
             interval_data = df.iloc[start_index:end_index]
             mean_Power = interval_data[Power_col].mean()
-            if use_manual:
+            if use_manual_Tc:
                 mean_Tc = manual_Tc
+            else:
+                mean_Tc = interval_data[Tc_col].mean() if Tc_col else manual_Tc
+            
+            if use_manual_Tm:
                 mean_Tm = manual_Tm
             else:
-                mean_Tc = interval_data[Tc_col].mean()
-                mean_Tm = interval_data[Tm_col].mean()
+                mean_Tm = interval_data[Tm_col].mean() if Tm_col else manual_Tm
+            
             alpha = (mean_Power * 1000) / (cooling_s * (mean_Tc - mean_Tm))
             results.append({
                 'Active Temp': active_Temp_value,
@@ -114,25 +118,28 @@ if uploaded_file is not None:
     if Tc_option == "Select column":
         Compound_Temp_col = st.sidebar.selectbox("Select the Compound Temp column", df.columns)
         manual_Tc = None
+        use_manual_Tc = False
     else:
         manual_Tc = st.sidebar.number_input("Enter the Compound Temp value", value=0.0)
         Compound_Temp_col = None
+        use_manual_Tc = True
 
     # Option to select column or manual input for Machine Temp
     Tm_option = st.sidebar.radio("Select Machine Temp input method", ["Select column", "Manual input"])
     if Tm_option == "Select column":
         Machine_Temp_col = st.sidebar.selectbox("Select the Machine Temp column", df.columns)
         manual_Tm = None
+        use_manual_Tm = False
     else:
         manual_Tm = st.sidebar.number_input("Enter the Machine Temp value", value=0.0)
         Machine_Temp_col = None
+        use_manual_Tm = True
 
     tolerance = st.sidebar.number_input("Enter the tolerance for Active Temp", min_value=0.0, value=0.0)
     cooling_s = st.sidebar.number_input("Enter the Cooling Surface", min_value=0.0, value=0.0)
 
     if st.sidebar.button("Calculate"):
-        use_manual = (Tc_option == "Manual input") or (Tm_option == "Manual input")
-        results = process_file(df, time_col, Power_col, Compound_Temp_col, Machine_Temp_col, active_Temp_col, tolerance, cooling_s, manual_Tc, manual_Tm, use_manual)
+        results = process_file(df, time_col, Power_col, Compound_Temp_col, Machine_Temp_col, active_Temp_col, tolerance, cooling_s, manual_Tc, manual_Tm, use_manual_Tc, use_manual_Tm)
 
         if results:
             # Display the results
