@@ -5,3 +5,5 @@ plotly
 Pillow
 xlsxwriter
 fsspec
+bcrypt
+treamlit_authenticator
