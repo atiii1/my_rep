@@ -6,4 +6,4 @@ Pillow
 xlsxwriter
 fsspec
 bcrypt
-treamlit_authenticator
+streamlit_authenticator
