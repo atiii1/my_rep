@@ -8,3 +8,5 @@ fsspec
 numpy
 matplotlib
 seaborn
+bcrypt
+streamlit_authenticator
