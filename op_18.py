@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import os
+from PIL import Image
 
 # Load the image
 logo = Image.open("hf_logo.png")
