@@ -2,6 +2,12 @@ import streamlit as st
 import pandas as pd
 import os
 
+# Load the image
+logo = Image.open("hf_logo.png")
+
+# Display the image at the top of the app
+st.image(logo, width=200)  # Adjust the width as needed
+
 def read_rpt_file(file):
     """
     Function to read a .rpt file and convert it to a DataFrame.
